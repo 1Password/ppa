@@ -9,7 +9,7 @@ BINS = 3
 # largest float32 x such that x * BINS < BINS
 ALMOST_ONE = 1.0 - pow(2.0, BINS - 24)
 
-eps = 2 
+eps = 3
 
 N = 10_000 # number of subjects
 
@@ -44,7 +44,7 @@ dists: list[Distribution] = []
 dists.append(Distribution("uniform", random.random))
 
 def ratio_normal(**kwargs) -> Ratio:
-    x =  np.random.normal(loc=kwargs['loc'], scale=kwargs['scale'])
+    x =  np.random.normal(**kwargs)
     return to_ratio(x)
     
 dists.append(Distribution(
