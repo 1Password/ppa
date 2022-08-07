@@ -17,20 +17,14 @@ delta_f = (BINS -1)/BINS
 
 laplace_parameter = delta_f / eps
 
-# our ratios are really portions in [0, 1), but I will use the word "ratio"
-# while they can be 1, a lot of operations are simplified if we can assume that
-# they are all less than 1.
+# our input ratios are really portions in [0, 1), but I will use the word "ratio". Perturbed data can be outside of that range.
 Ratio = NewType('Ratio', float)
-def is_ratio(r: Any) -> TypeGuard[Ratio]:
-    if not isinstance(r, float):
-        return False
-    return r >= 0.0 and r < 1.0
 
 def to_ratio(x: Any) -> Ratio:
     v = float(x)
-    if math.isnan(v):
+    if math.isnan(v) or math.isinf(v):
         raise ValueError
-    return min(max(0.0, v), ALMOST_ONE)
+    return v
 
 # type alias for source distribution function
 DistFunction = Callable[..., Ratio]
@@ -60,23 +54,26 @@ def main():
         for _ in range(N):
             datum = dist.function()
             raw_data.append(datum)
-            true_bin.append(int(math.floor(datum * BINS)))
+            true_bin.append(datum * BINS)
             perturbed_datum = datum + np.random.laplace(scale =laplace_parameter)
 
-            r = perturbed_datum
-            if r >= 0.0 and r < ALMOST_ONE:
-                perturbed_bin.append(int(math.floor(perturbed_datum * BINS)))
-            else:
-                perturbed_bin.append(None)
-
-
-        pyplot.hist(true_bin, align='left')
-        pyplot.hist([x for x in perturbed_bin if x is not None], align='right')
+            perturbed_datum *= BINS
+            
+            perturbed_bin.append(perturbed_datum)
+        
+        bins = range(math.floor(min(perturbed_bin)),
+            math.ceil(max(perturbed_bin)))
+        labels = ["True", "Perturbed"]
+        pyplot.title(dist.desc)
+        pyplot.hist([true_bin, perturbed_bin],
+            bins=bins, label=labels)
+        pyplot.legend()
+        
         pyplot.show()
 
         same_bin: int = 0
         for i in range(len(true_bin)):
-            if perturbed_bin[i] is not None and perturbed_bin[i] == true_bin[i]:
+            if perturbed_bin[i] == true_bin[i]:
                 same_bin += 1
 
         print(f'{same_bin} out of {i+1} are in the same bin')
