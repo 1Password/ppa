@@ -1,0 +1,61 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{stNotes}[2022/03/02 Security Team training notes]
+
+\RequirePackage{amsmath}
+\RequirePackage{amsmath,amssymb}
+
+\RequirePackage{csquotes}
+
+% It would be easier to list which options _not_ to include.
+\RequirePackage[adversary,
+  logic,probability,
+  notions,
+  keys,
+  operators,
+  sets,
+  primitives,
+  landau,
+  sets,
+  asymptotics,
+  complexity,
+  ff]{cryptocode}
+
+\providecommand*{\spoly}[1][x]{\ensuremath{\poly[\abs{#1}]}}
+\providecommand*{\Zn}[2][\times]{\ensuremath{\mathbb{Z}^{#1}_
+{#2}}}
+\providecommand*{\Ep}[1][p]{\ensuremath{\mathcal{E}_{#1}}}
+\providecommand{\tot}{\varphi}
+
+% For better tables
+\RequirePackage{array}
+\RequirePackage{dcolumn}
+\RequirePackage{booktabs}
+
+% make it easier to set columns of math
+\newcolumntype{C}{>{$}c<{$}}
+\newcolumntype{L}{>{$}l<{$}}
+\newcolumntype{R}{>{$}r<{$}}
+% center on .
+\newcolumntype{d}{D{.}{.}{-1}}
+% column headers
+\newcolumntype{h}{>{\itshape }c}
+
+\RequirePackage{ragged2e}
+\newcolumntype{P}[1]{>{\RaggedRight }p{#1}}
+
+% For images and links
+\RequirePackage{graphicx}
+\RequirePackage{hyperref}
+
+\RequirePackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+%\newcommand{\xmark}{\ding{55}}%
+\newcommand{\xmark}{\ding{53}}%
+
+\RequirePackage{numprint}
+% Use a thin space as the thousands separator
+% and reluctantly allow line breaks at those points
+\npthousandsep{\,\penalty\binoppenalty}
+
+\providecommand*{\vstr}[1]{“\texttt{#1}”}
+
