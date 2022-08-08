@@ -271,6 +271,63 @@
   In our example, we never want to have password strengths so it would have to be done client side at data collection time.
 \end{frame}
 
+\subsection{Homomorphic encryption}
+
+\begin{frame}{Example: Millionaire's problem}
+  \blockcquote{yao1982protocols}{Two millionaires wish to know who is richer;
+    however, they do not want to find out inadvertently any additional information about each other’s wealth. How can they carry out such a conversation?}
+  \note[item]{millionaires were different in 1982}
+\end{frame}
+
+
+\begin{frame}{Homomorphic encryption}
+  \begin{itemize}
+    \item For any protocol that can run in polynomial time using a trusted third party, there is a protocol that can produce the same results without a TTP\@.
+    \item Allows multiple parties to compute things over their individual secrets without revealing secrets to each other or a third party.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Practicalities}
+  \begin{itemize}
+    \item Still need a PhD to make real use of it?
+    \item Polynomial time and space doesn't actually mean fast and small.
+    \item Protocols have a lot of back and forth.
+  \end{itemize}
+\end{frame}
+
+\section{A rant on noise}
+
+\begin{frame}{“We can't handle statistical error”}
+  \begin{itemize}
+    \item These techniques add statistical error
+    \item They add known, quantifiable amounts of statistical error
+    \item Thus you either need a larger sample, or you have wider confidence intervals in your results
+    \item Some objections have been “we can't accept anything with statistical error or confidence intervals."
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}{There is always statistical error}
+  These techniques add known amounts of error on top of the error that one would \emph{already have} without these techniques.
+\end{frame}
+
+\begin{frame}[standout]
+  If you can't handle statistical error or you don't know that you always have some you should not call yourself a data analyst.
+  \note[item]{This is why I don't have friends}
+\end{frame}
+
+\section{Conclusions?}
+
+\begin{frame}{Can we do it?}
+  Is there a combination vagueness, random responses, and data protections on the acquired data
+  that would offer sufficient guarantees for our users
+  and allow us to answer the 2FA/strength question with sufficient confidence?
+\end{frame}
+
+\begin{frame}{I don't know}
+  When I started, I hoped my math was good enough to figure this out analytically. Now I must resort to simulations.
+\end{frame}
+
 \appendix
 \section{Resources}
 
