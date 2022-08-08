@@ -28,9 +28,9 @@
 % is needed for these slides.
 % He can do that by first generating the .bcf using his resources, but then
 % using
-%  biber --output_format=bibtex --output_resolve quantunm.bcf
-%  rm quantunm.bcf
-% to create a quantunm_biber.bib file to be included.
+%  biber --output_format=bibtex --output_resolve pwcon22.bcf
+%  rm pwcon22.bcf
+% to create a pwcon22_biber.bib file to be included.
 %
 \IfFileExists{./pwcon22_biber.bib}{%
   \addbibresource{pwcon22_biber.bib}
@@ -96,6 +96,12 @@
 \begin{frame}{1Password}
   \begin{itemize}
     \item A password manager. Software and a service.
+    \item The client software is where most of the action is.
+          \begin{itemize}
+            \item Unlocked client knows names of vaults and names of items. Server doesn't.
+            \item Unlocked client knows password strengths. Server doesn't.
+            \item Unlocked client has decrypted encryption keys. Server doesn't.
+          \end{itemize}
     \item Designed so that we learn as little about users secrets as possible
     \item We like to think we know a thing or two about password behavior
   \end{itemize}
@@ -141,225 +147,78 @@
   \begin{alertblock}{For user eyes only}
     We don't ever want to know the strength of anyone's account password.
   \end{alertblock}
-  (Is this slide really necessary? Really this should go without saying.)
 \end{frame}
 
+\begin{frame}{Reasons to not know}
+  (I don't think I really need to list the reasons.)
+\end{frame}
 
-\end{document}
-\section{Complexity classes (again)}
-
-\begin{frame}{Complexity in terms of machines}
+\begin{frame}{Not knowing in not enough}
+  Not knowing is not enough. The world needs to know that we don't know.
   \begin{itemize}
-    \item A problem is in \pol\ if it can be solved in polynomial time on a deterministic Turing machine (DTM).
-    \item A problem is in \npol\ if it can be solved in polynomial time on a non-deterministic Turing machine (NTM).
-          \note[item]{“Non-derministic“ here doesn't mean probabilistic. (There is also something called a probabilistic Turing machine (PTM)). It means that the machine is capable of making correct guesses of a certain sort.}
-    \item A problem is in \complclass{BQP} if it can be probabilistically solved in polynomial time on a quantum Turing machine. (QTM)
-          \note[item]{An algorithm running on a BQP needs to give the correct answer most of the time. But it does not need to give the correct answer all of the time.}
+    \item Each participating user should be able to determine that their privacy is being protected.
+    \item The Security and Privacy communities must be able to confirm that our system behaves as we say it does.
+  \end{itemize}
+
+\end{frame}
+
+\section{Overview of potential techniques}
+
+\begin{frame}{General structure}
+  \begin{itemize}
+    \item Clients have the sensitive data.
+    \item Clients do something to that data and send it to a system that is not under the user's control.
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Abstracting machine details}
-  Consider the following variants of physical DTM\@.
+\subsection{Anonymization}
+
+\begin{frame}{Removing identifers}
   \begin{itemize}
-    \item The read/write tape has a start point and is arbitrarily long in just one direction.
-    \item The read/write tape is arbitrarily long in both directions.
-    \item There are two tapes.
-    \item Instead of a tape, there is a two dimensional grid.
+    \item Clients will not send any identifying data.
+    \item Clients can't avoid “sending” IP addresses. (Tor might help with that)
   \end{itemize}
-
-  What is in $\bigO{n^3}$ in one variant may be in $\bigO{n}$ in another variant.
 \end{frame}
 
-\begin{frame}{Poly is stable}
-  Although the complexity can vary depending on the details of the DTM, if something in polynomial on any DTM, there is a polynomial time algorithm for it on all DTMs.
-
-  \note[item]{This is why we draw a big line between polynomial and non-polynomial, while we don't draw a big line between linear, $\bigO{n}$ and cubic, $\bigO{n^3}$.}
+\begin{frame}{De-Anonymization is a thing}
+  \begin{itemize}
+    \item Anonymization is hard, but even when done right it isn't enough.
+    \item Information wants to be free! (Assume your data will leak)
+    \item Anonymized data combined with other (public) data can be de-anonymized.
+    \item That other public data can come from sources you have nothing to do with.
+    \item That other data might not yet exist at the time you create your scheme.
+  \end{itemize}
 \end{frame}
-
-\section{Quantum Computers}
 
 \begin{frame}[standout]
-  All computers are quantum, but some are more quantum than others.
-  \note[item]{Creating and designing transistors relies deeply on quantum physics. And chips are lots of transistors wired together in a very small space.}
-  \note[item]{But tranistors do not exhibit quantum properties. They are good for storing bits, not qubits.}
+  Good anonymization and data protection is necessary. But they are far from sufficient.
 \end{frame}
 
-\begin{frame}
-  \blockcquote[p.~255]{Aumasson2017:Serious}{Quantum computers promise more computing power because with only $n$ qubits, the can \emph{process} $2^n$ numbers.}
-\end{frame}
+\subsection{Random response}
 
-\begin{frame}{bit versus qubit}
+\begin{frame}{Welcome to the 60s!}
+  In one setup~\cite{BBB:JoP79} Subjects given a questionnaire but told to roll a die before answering each question.
+  The instructions told them to answer differently depending on their roll of the die
   \begin{itemize}
-    \item $n$ bits can store one of $2^n$ values.
-    \item $n$ qubits can do stuff with up to $2^n$ values.
+    \item[1--4] Answer honestly
+    \item[5] Answer “yes”
+    \item[6] Answer “no”
   \end{itemize}
 \end{frame}
 
-\begin{frame}{This quote is signifcant}
-  \blockcquote[p.~257]{Aumasson2017:Serious}{Unitary matrices (and quantum gates by definition) are invertible, meaning that given the result of an operation, you can compute back the original qubit by applying the inverse matrix.}
-\end{frame}
-
-\begin{frame}{It's deterministic}
-  \begin{block}{Fully deterministic}
-    Quantum mechanics is fully deterministic.
-  \end{block}
-  \note[item]{We will get to quantum non-determinism, but that happens later.}
-\end{frame}
-
-\begin{frame}{Interference}
-  \blockcquote{AW:the-talk}%
-  {“When you make a measurement, there's a rule for converting these amplitudes into ordinary probabilities.
-    But when you're not looking, the amplitudes \dots\ well,
-    sometimes they do something very special and private with each other.
-    Something very \dots\ \emph{intimate}.”}
-\end{frame}
-
-\section{Simon's Problem}
-
-\begin{frame}{The problem}
-  \nocite{Simon94:SIAM}
-  \begin{definition}[Simon's Problem]
-    Given a function $f(\cdot)$ whose input is a string of $n$ bits and whose output is a string of $n$ bits, there may be a string of $n$ bits, $m$, such that
-    \begin{itemize}
-      \item If $f(x) = f(y)$ then either $x = y$ or $x \xor y = m$;
-      \item And, if $x \xor y = m$ then $f(x) = f(y)$.
-    \end{itemize}
-    Answer whether such an $m$ exists and what it is if it does exist.
-    \note[item]{That could be written much more concisely if I'd taught you all more notation.}
-  \end{definition}
-\end{frame}
-
-\begin{frame}{Simon says}
+\begin{frame}{Known probability of alternative}
+  More recently subjects drew a red or green ball out of a sack and answered the red or green question. \cite{LaraETAL06:RRT}
   \begin{itemize}
-    \item Daniel Simon called it “Is a function invariant under some xor-mask?”~\cite[§3]
-          {Simon94:SIAM}
-    \item We are not going to even attempt to go through Simon's algorithm;
-          \note[item]{Seriously, I feel like I understand this stuff conceptually,
-            but I suck at Linear Algebra.}
-          \note[item]{Indeed, every time I fail to grasp an eigenvalue, my sense of self-worth takes a hit.}
-          \note[item]{Just because we aren't doing the math, doesn't mean you don't have to endure obscure math puns.}
-    \item Simon says, the problem is exponential on a probabilistic Turing machine;
-    \item Simon says, the problem is polynomial (with bounded error) on a quantum Turing machine;
-          \note[item]{Simon not only says these things, but he proves them.}
-    \item I say it is good to get a feel for the problem because it gives a sense of the kinds of things that quantum computers can do.
+    \item[Red] “Did you ever interrupt a pregnancy?"
+    \item[Green] “Were you born in April?”
   \end{itemize}
-  \note[item]{Simon would almost certainly say not to do the whole “Simon says“ thing.}
-\end{frame}
-
-\begin{frame}{Classically}
-  In a classical world, you need to query the function $f$ on the order of $2^n$ times to be a able to have high confidence that the xor-mask, $m$, exists.
-  You can do so probabilistically, but it is with classical probabilities.
-\end{frame}
-
-\begin{frame}{Quantumly}
-  \begin{itemize}
-    \item Solving the problem can be recast as exploring a $n - 1$ layer decision tree with $n$ branches.
-    \item In the classical system, each transition in the tree has a probability.
-    \item In a quantum system, each transition in the tree has an \emph{amplitude}.
-    \item A magic step is performed at each layer
-          \note[item]{I've read  textbook sections on the magical step, worked through the toy examples, read Simon's description of it. And I still don't grok it.}
-          \note[item]{I will need to make my kid read it and then explain it to me.}
-    \item The amplitudes at each node interfere with the others.
-    \item In some cases such interference can make a branch certain or can make a branch impossible.
-    \item After $n$ steps only those nodes that are certain remain.
-    \item Those amplitudes can be converted to probabilities of 0 or 1 which can be transformed into a solution of $n$ bits.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Maintaining the magic}
-  No classical interactions can happen except at the very beginning and at the very end. Everything in the middle must maintain the entanglement of the entire problem. So this requires $n-1$ quantum operations on $n$ \emph{logical} qubits.
-  Thus
-
-  \begin{itemize}
-    \item Running Simon's algorithm requires $2n$ logical qubits
-    \item The $2n$ qubits must remain entangled through $n-1$ operations
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Many qubits per logical qubit}
-  Algorithms of the sort described require something called quantum error correction. And that means that you need lots of physical qubits per logical qubit.
-\end{frame}
-
-\begin{frame}{Decoherence}
-  \begin{itemize}
-    \item Copenhagen (Niels Bohr and students) interpretation was “observation causes decoherence.”
-
-    \item Erwin Schrödinger was \emph{mocking} the Copenhagen interpretation of decoherence with the cat in the box thing.
-
-    \item The standard view (most of 20th century) is ”just do the math, and don't try to give it an interpretation.”
-
-    \item Huge Everett: The math is describing reality, and we should take it at face value. The universe splits into Many Worlds states become so different that they can't interfere with each other.
-
-    \item David Deutsch: If we take Everett seriously, it gives us a model for designing quantum computers.
-  \end{itemize}
-  \note[item]{Roger Penrose: decoherence happens when the difference between certain state difference exceeds Plank's constant. Also, conscious is mysterious and so is quantum stuff, so quantum mystery is the source of consciousness.}
-  \note[item]{Also Penrose: I say silly things about Gödel's Incompleteness theorem and the minds of mathematicians despite being a genuinely very smart mathematical physicist.}
-
-\end{frame}
-
-\section{Quantum advantage and quantum cryptoanalysis}
-
-\subsection{Quantum Advantage}
-
-\begin{frame}{Quantum advantage}
-  \begin{definition}[Quantum Advantage]
-    A system demonstrates quantum advantage if it performs a computation that no non-quantum system in existence could perform in any feasible amount of time.
-  \end{definition}
-  \note[item]{The original term was “quantum supremacy”, but the community and the coiner of the term have since throught better of it.}
-\end{frame}
-
-\begin{frame}{The problem needn't be usefu}
-  All systems to date (and in the near future) aiming to demonstrate quantum advantage construct the problem of “simulating a quantum computer circuit.”
-  The QC simulates by being one, while the classical computation problem requires an actual simulation.
-\end{frame}
-
-\begin{frame}{Answers must be checkable}
-  The problems used to demonstrate quantum advantage must be contrived to be independently verifiable.
-\end{frame}
-
-\begin{frame}{Sycamore}
-  Google's Sycamore used 53 qubits and each run of it was able to maintain coherence for several milliseconds. IBM had some legitimate quibbles about whether Sycamore really achieved advantage, but the quibbles did not challenge the main point.
-
-  We now know that it is actually possible to build and run a quantum computer that compute things which contemporary supercomputers cannot.
-\end{frame}
-
-\subsection{Quantum cryptoanalysis}
-
-\begin{frame}{Shor's algorithm}
-  \begin{itemize}
-    \item Shor's algorithm~\cite{shor1994algorithms} changed everything;
-    \item It solves factoring or the discrete logarithm problem in polynomial time;
-    \item Shor's algorithm is clever extension of Simon's algorithm;
-  \end{itemize}
-\end{frame}
-
-\begin{frame}{Grover's algorithm}
-  \begin{itemize}
-    \item In 1996 Lov Grover presented a quantum search algorithm~\cite{grover1996:fast}.
-    \item It is not a exponential speedup, but it is a quadratic speed up.
-    \item It reduces a search of a $2^{128}$ space to $2^{64}$ steps.
-    \item Grover's algorithm is why AES-256 exists.
-    \item Grover's algorithm is a clever extension of Simon's algorithm.
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}{Do we need to worry about it?}
-  \blockcquote{Aaronson19:SupremecyFAQ}{Running Shor’s algorithm to break the RSA cryptosystem would require several thousand logical qubits. With known error-correction methods, that could easily translate into millions of physical qubits, and those probably of a higher quality than any that exist today. I don’t think anyone is close to that, and we have no idea how long it will take.}
+  This was conducted in Mexico in 2001. Abortion was highly stigmatized and illegal.
+  \note[item]{The study concluded that 16.3\% of women in their sample had had at least one induced abortion (standard error of 0.016).}
 \end{frame}
 
 \appendix
 \section{Resources}
 
-\begin{frame}{Resources}
-  \begin{itemize}
-    \item \href{\reporoot/public/s/quantum.pdf}{These slides} and \href{\sourceroot/}{their sources}.
-    \item David Deutsch's book, \textit{The Fabric of Reality} \parencite{Deutcsh98:fabric} deeply changed the way that I think about quantum weirdness.
-          It presents Everett's “many worlds” view.
-    \item Scott Aaronson's blog \href{https://scottaaronson.blog}{Shtetl-Optimized}.
-  \end{itemize}
-
-\end{frame}
 
 \begin{frame}[t,allowframebreaks]
   \frametitle{References}
