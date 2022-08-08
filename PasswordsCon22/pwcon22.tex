@@ -74,7 +74,7 @@
 \subtitle{What we should never know}
 
 \hypersetup{colorlinks=true, allcolors=black, urlcolor=magenta}
-\providecommand*{\reporoot}{https://gitlab.1password.io/security/sec-team-training}
+\providecommand*{\reporoot}{https://gitlab.com/1Password/ppa}
 \providecommand*{\sourceroot}{\reporoot/-/tree/main/2022-04-08}
 
 \begin{document}
@@ -194,6 +194,13 @@
   Good anonymization and data protection is necessary. But they are far from sufficient.
 \end{frame}
 
+\subsection{Vague response}
+
+\begin{frame}{Wide bins}
+  The client shouldn't report password strength with the full precision that it knows,
+  but could, say, use three bins: low, medium, high.
+\end{frame}
+
 \subsection{Random response}
 
 \begin{frame}{Welcome to the 60s!}
@@ -216,8 +223,65 @@
   \note[item]{The study concluded that 16.3\% of women in their sample had had at least one induced abortion (standard error of 0.016).}
 \end{frame}
 
+\begin{frame}{It works}
+  Researchers have been able to demonstrate that the increased rate of honest responses outweighs the statistical noise.
+\end{frame}
+
+\begin{frame}{Is it enough}
+  Suppose we set up a system to answer honestly about password strength 50\% of the time.
+  If our data leaks and is de-anonymized is the user sufficiently protected.
+\end{frame}
+
+\begin{frame}{Too much noise?}
+  \begin{itemize}
+    \item Vague response reduces the power of statistical tests.
+    \item Random response reduces the power of statistical tests.
+    \item Opt-in reduces the sample size and introduces a selection bias.
+  \end{itemize}
+  (I have started to play with simulations to see what kind of samples and parameters are likely to still produce usable results)
+\end{frame}
+
+\section{Differential privacy}
+
+\begin{frame}{Differential privacy}
+  \begin{itemize}
+    \item DP is about limiting the possibility of de-anonymization
+    \item DP provide a common mathematical notion of dataset privacy protections across a wide variety of techniques
+    \item It adds statistical noise in ways similar to vague and random response
+    \item The noise it adds is designed to make it possible to see its effect on privacy
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{DP is not \dots}
+  \begin{itemize}
+    \item \dots a single technique
+    \item \dots applied at a common point of data processing
+    \item \dots particularly easy.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{When and where}
+  Different DP techniques can be done at
+  \begin{itemize}
+    \item at data collection time
+    \item to transform a dataset
+    \item at data analysis time
+  \end{itemize}
+  \note[item]{The opendp project has a really nice set of tools for generating privacy preserving reports from data sets that are not privacy preserving}
+  In our example, we never want to have password strengths so it would have to be done client side at data collection time.
+\end{frame}
+
 \appendix
 \section{Resources}
+
+\begin{frame}{Resources}
+  \begin{itemize}
+    \item Repository containing these slides (and a few other things): \url{\reporoot}
+    \item \href{https://opendp.org}{OpenDP}: Really nice tools and community for the DP at the data analysis stage. \url{https://opendp.org}
+    \item \href{https://www.usenix.org/conferences/byname/1046}{Usenix PEPR}: Privacy Engineering, Practice and Respect.
+  \end{itemize}
+
+\end{frame}
 
 
 \begin{frame}[t,allowframebreaks]
