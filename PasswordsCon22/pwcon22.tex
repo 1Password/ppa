@@ -95,7 +95,7 @@
 
 \begin{frame}{1Password}
   \begin{itemize}
-    \item A password manager. Software and a service.
+    \item A password manager. Client software and a service.
     \item The client software is where most of the action is.
           \begin{itemize}
             \item Unlocked client knows names of vaults and names of items. Server doesn't.
@@ -162,6 +162,13 @@
 
 \end{frame}
 
+\begin{frame}{Today's talk}
+  Today's talk is an over view of what I have learned so far about how we might do this.
+
+  Much of what I learned is new or new-ish to me. But there is nothing fundamentally new here. So you can spend the remainder of this talk napping.
+
+\end{frame}
+
 \section{Overview of potential techniques}
 
 \begin{frame}{General structure}
@@ -188,6 +195,10 @@
     \item That other public data can come from sources you have nothing to do with.
     \item That other data might not yet exist at the time you create your scheme.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Netflix case}
+  (Talk about Netflix de-anonymization if time)
 \end{frame}
 
 \begin{frame}[standout]
@@ -329,6 +340,41 @@
 \end{frame}
 
 \appendix
+
+\section{Netflix case}
+\begin{frame}{Netflix data release}
+  \begin{itemize}
+    \item In 2006 Netflix publicly released an anonymized dataset of about 100 million movie ratings from about 480,000 subscribers.
+    \item From Netflix FAQ “all customer identifying information has been removed; all that remains are ratings and dates.”
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{IMDB public data}
+  \begin{itemize}
+    \item Some Netflix subscribers publicly share some movie ratings in other places.
+    \item Some of those people may not want to world do know what about some of the other movies they watched.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{De-anonymization}
+  \Textcite{narayanan2008robust} use Netflix and IMDB data to illustrate a general algorithm for de-anonymization:
+
+  \begin{quotation}
+    With 8 movie ratings [from IMDB] (of which 2 may be completely wrong) and dates that may have a 14-day error, 99\% of records [can] be uniquely identified in the dataset. For 68\%, two ratings and dates (with a 3-day error) are sufficient.
+  \end{quotation}
+
+\end{frame}
+
+\begin{frame}{Ten years later}{The test of time}
+
+  \begin{quote}
+    Attacks only get better with time. The flood of de-ano\-nym\-i\-za\-tion demonstrations in the last decade makes for a strong argument that database privacy should rest on provable guarantees rather than the absence of known attacks. The flourishing research on differential privacy is thus a welcome development. \parencite[p.~1]{narayanan2019robust}
+  \end{quote}
+
+  And there have been a flood of de-anonymization demonstrations.
+
+\end{frame}
+
 \section{Resources}
 
 \begin{frame}{Resources}
