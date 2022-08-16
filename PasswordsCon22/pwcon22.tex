@@ -45,12 +45,14 @@
 \usepackage{FiraSans}
 \usefonttheme{professionalfonts}
 \usetheme{metropolis}
-\definecolor{BitsBlue2}{HTML/hsb}{0A56BF/0.597,0.95,0.75} % guess % H=215
+\definecolor{BitsBlue2}{HTML/hsb}{0A56BF/0.597,0.95,0.75}
 \metroset{titleformat = smallcaps,
   titleformat plain = regular,
   subsectionpage = progressbar,
   block = fill}
 \setbeamercolor{palette primary}{bg=BitsBlue2}
+\setbeamercolor{alert text}{fg=mDarkBrown}
+\setbeamertemplate{frame footer}{\insertshortauthor~(\insertshortinstitute)}
 \usepackage{appendixnumberbeamer}
 % I give up trying to find a sans math. Fira Math is too heavy,
 % and Fira Math Light is missing symbols.
@@ -58,6 +60,7 @@
 \setbeamertemplate{theorems}[numbered]
 
 \usepackage{stNotes}
+\usepackage{fontawesome5}
 
 % \mcomm for comments in lines of math
 \providecommand*{\mcomm}[1]{\text{\footnotesize (#1)}}
@@ -67,7 +70,9 @@
 \setlength{\epigraphrule}{0pt}
 
 \author[J.~Goldberg]
-{Jeffrey Goldberg\texorpdfstring{\\ \texttt{jeff@1Password.com}}{}}
+{Jeffrey Goldberg\\
+  \texorpdfstring{\texttt{jeff@1Password.com}}{jeff\@1Password.org}\\
+  \texorpdfstring{\faTwitter\ \texttt{@jpgoldberg}}{}}
 \institute[1Password]{1Password}
 \title{Can we safely learn about users' passwords}
 \subtitle{What we should never know}
@@ -106,7 +111,10 @@
     \item Designed so that we learn as little about users secrets as possible
     \item We like to think we know a thing or two about password behavior
   \end{itemize}
-  \note[item]{I have to ration my nagging of our Marketing department. And so we are not sponsors of this event.}
+\end{frame}
+
+\begin{frame}{Data minimization is best}
+  \blockquote[1Password]{We can't lose, use, or abuse data we don't have in the first place.}
 \end{frame}
 
 \begin{frame}{The Problem}
