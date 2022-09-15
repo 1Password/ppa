@@ -2,7 +2,7 @@
 
 The internal question that the following was an answer to was (roughly)
 
-> How should we anonymize selected fields from production B5 database tables when importing into oue datalake
+> How should we anonymize selected fields from production B5 database tables when importing into our datalake
 
 ## Background and terminology
 
@@ -10,29 +10,34 @@ For those outside of 1Password, "B5" is is our backend for the 1Password service
 
 To better illustrate the kinds of things we may wish to analyze from the kinds of data in B5 are things such as
 
-- "On average, what proportion of enrolled members of business accounts have connected to the service in the past 14 days?"
-- "At the end of the free trial period, what is the average number of items users have created distinguishing between users who did or did not convert their trial accounts to paid?"
+1. "At the end of the free trial period, what is the average number of items users have created distinguishing between users who did or did not convert their trial accounts to paid?"
+2. "On average, what proportion of enrolled members of business accounts have connected to the service in the past 14 days?"
 
-Those are examples of questions that can be answered by analyzing data which which is a by-product of providing the service.
+Those are examples of questions that can be answered by analyzing data which which is a by-product of providing the service. Answering example question (1) does not require making use of any identifiers beyond the ability to JOIN tables indicating number of items and the status of the account as paid or trial.
+But that ability to join (or have things in the same record within a database table) is most naturally served by using an anonymized user identifier.
+
+The second example question requires some way to identify which users are in the same account as other users. That is we need to be able to make tallies within accounts. The most natural (and technically plausible) way to do this is to make use of anonymized account identifiers.
+Again, we will also need to JOIN based on anonymized user identifiers.
 
 ## Identifiers
 
-Roughly speaking, we hold two types of identifiers.
-There are identifiers like the member email address, e.g., `hudson@bstreet.example` or the account domain, `baker21.1password.eu`.
+Roughly speaking, B5 holds two types of identifiers.
+There are identifiers like the member email address, e.g., `hudson@bstreet21.example` or the account domain, `baker21.1password.eu`.
 Those identifiers contain information that correlates with non-B5 information about the customer.
 
 There are other identifiers used by B5 which are deliberately designed to contain no information information about customers outside of our database.
 These are randomly generated 128 bit numbers encoded using base-32 encoding.
 So a user UUID would be something like `LIBGNOEGNHCJB5RZYLWXA37PRI`.
 
-The UUIDs are designed to not be secret, but within the B5 database, it is possible to
+The UUIDs are designed to not be secret. That is knowledge of a UUID is never used to authenticate any process.
+Within the B5 database it is possible to
 go from a UUID to, say, an email address.
 Indeed, this is required for providing the service.
 For example, 1Password would not be able to present members of a team the email address of
 the person they are sharing an vault with without some mechanism to get from UUIDs to human oriented identifiers.
 
 Direct access to the B5 data base is tightly restricted and monitored.
-The 1Password customer support Backoffice system has some access and many 1Password employees have access to that Backoffice system.
+Limited indirect access exists for things like our billing systems, internal customer support systems, and the export to the data lake.
 
 ## The purpose of anonymizing identifiers
 
@@ -45,7 +50,15 @@ For the types of analyses we need, the anonymized identifiers in data lake shoul
 
 - Deterministically created from the B5 identifiers. That is the transformation process should be a function in that f(x) = y should always produce the same y each time it is given a particular x.
 - One-to-one. That is distinct identifiers in B5 must map to distinct anonymized identifiers in datalake.
-- Not be reversible. Given an anonymized identifier in datalake it should be impossible (without special permission or access) to determine the identifier in B5.
+
+Those could be achieved by exporting the identifiers directly to the data lake,
+but we also which to make it difficult to work backwards from what is in the data lake to information available in B5.
+For example, billing information may include postal code.
+If an authorized user of the data in the data lake also had access to, say, billing information, they would be able to connect data in the data lake to postal codes.
+
+The system proposed here does not preclude analyses based on postal codes, but it would require that use of postal codes be explicitly approved.
+Properly anonymizing IDs mean that those responsible for overseeing what data is used and how will have the visibility and control necessary to do their jobs.
+Without anonymizing identifiers, we would have far fewer controls on how data is connected.
 
 ## (Salted) hashes are not enough
 
@@ -66,7 +79,7 @@ but that does make the hash irreversible if set of pre-images can be narrowed do
 
 Exactly how to implement this will depend on the cryptographic tools available to the export process. I will first describe it in terms of HMAC. All examples of HMAC assume HMAC-SHA256.
 
-We use a keyed hash construction. There will be a secret that is required to hash the data. Let's call it `hash_key`. Let's call the raw field from B5, `src` and what gets stored in datalake `hashed_src`. 
+We use a keyed hash construction. There will be a secret that is required to hash the data. Let's call it `hash_key`. Let's call the raw field from B5, `src` and what gets stored in datalake `hashed_src`.
 
 The attached Python has lots of comments, and lots of fiddly things for converting strings to bytes and back again.
 
