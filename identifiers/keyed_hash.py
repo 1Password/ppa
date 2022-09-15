@@ -10,15 +10,25 @@ import base64
 # least 23 characters in length.
 
 
-def get_hash_key_from_vault() -> bytes:
-    """Retrieves the secret hash key from a well protected place.
+def get_hash_key_from_vault(field: str) -> bytes:
+    """Retrieves the secret hash key for field from a well protected place.
 
     This could just randomly generate a string with at least 128 bits of
     entropy if we do not need results to be repeatable on separate runs.
     """
 
+    # this is just a demo, and the only field we know about is "email"
+    known_fields = ["email"]
+
+    if field not in known_fields:
+        # This is security sensitive code. The input field string
+        # may be malicious. Best not to log or display it without performing
+        # additional checks.
+        raise ValueError("unknown field")
+
     # for this demo code, we just return something hard coded.
-    # Do not use this in action. In action secret needs to be better protected
+    # Do NOT use a hard coded key action.
+    # The secret needs to be better protected and managed.
     return b'XCGkaWfQQ9TQyfDLVKebYdH'
 
 
@@ -46,7 +56,7 @@ def encode_to_string(data: bytes) -> str:
     return base64.b64encode(data).decode(encoding="ascii")
 
 
-hash_key: bytes = get_hash_key_from_vault()
+hash_key: bytes = get_hash_key_from_vault(field="email")
 
 # There is an optimization that can be done which
 # pre-computes and allocates some constant stuff outside of the loop.
