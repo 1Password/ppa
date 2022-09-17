@@ -3,6 +3,14 @@ import hmac
 from hmac import HMAC
 import base64
 
+# This sample/demo code for anonymizing identifiers is excessively factored
+# and very verbose, particular when it comes to communicated expected types.
+# This is deliberate to help better communicate what is going on.
+#
+# This demo/sample code uses a hardcoded key. Do not do the same in action.
+# The keys should be fetched from a secure storage mechanism, such as
+# 1Password's Secrets Automation.
+
 class Anonymizer:
     def __init__(self, hash_key):
         """Initialize a new Anonymizer with a key."""
@@ -79,16 +87,14 @@ def get_hash_key_from_vault(field: str) -> bytes:
     """
 
     # this is just a demo, and the only field we know about is "email"
-    known_fields = ["email"]
-
-    if field not in known_fields:
+    if field not in ["email"]:
         # This is security sensitive code. The input field string
         # may be malicious. Best not to log or display it without performing
         # additional checks.
         raise ValueError("unknown field")
 
     # for this demo code, we just return something hard coded.
-    # Do NOT use a hard coded key action.
+    # Do NOT use a hard coded key in action.
     # The secret needs to be better protected and managed.
     return b'XCGkaWfQQ9TQyfDLVKebYdH'
 
@@ -98,10 +104,11 @@ def truncate(data: bytes, byte_length=15) -> bytes:
     # 15 is a good default. It is collision safe for any plausible
     # number of things we are hashing, and it will produce cleaner results
     # with both base64 and base32 stringifications.
-    if byte_length < 12:
-        raise ValueError("byte_length must be at least 12")
 
     length = min(byte_length, len(data))
+
+    if length < 12:
+        raise ValueError("byte_length must be at least 12")
     return data[:length]
 
 

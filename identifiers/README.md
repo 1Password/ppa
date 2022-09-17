@@ -84,13 +84,14 @@ We use a keyed hash construction. There will be a secret that is required to has
 The attached Python has lots of comments, and lots of fiddly things for converting strings to bytes and back again.
 
 This pseudo-code leaves out many parameters and details.
+
 ```
 secret_hash_key <- get_hash_key_from_vault()
 for src in b5_table {
-    hashed_src_bytes <- HMAC(key = secret_hash_key, msg = src)
-    truncated_hash <- truncate(hashed_src_bytes)
-    hashed_src <- encode_to_string(truncated_hash)
-    write_out(hashed_src)
+    anon_bytes <- HMAC(key = secret_hash_key, msg = src)
+    anon_truncated_bytes <- truncate(anon_bytes)
+    anon_string <- encode_to_string(anon_truncated_bytes)
+    write_out(anon_string)
 }
 ```
 
@@ -98,7 +99,7 @@ for src in b5_table {
 
 - SHA256 for HMAC's hash.
 
-    It doesn't really matter what we use here, but using SHA256 means that we don't need to explain or defend why it doesn't matter.
+    It doesn't really matter what we use here, but using SHA256 means that we don't need to explain or defend why it doesn't matter. Be aware that many Python libraries default to MD5, and so the code must explicitely state the has to use.
 
 - Truncation is of the number of bytes before being converted to a string. Using 15 bytes may make other things easier.
 
