@@ -32,7 +32,6 @@ It has been growing in use, both for data that organizations make public; but it
 The techniques break away from an all-or-nothing approach to data collection, storage, and analysis. Instead of making a binary PII/not-PII decision, we recognize that everything is potentially identifying and so the idea is to balance privacy guarantees against utility of the data in a more fluid way.
 
 We will find in what follows that technical difficulty of implementation, privacy protections, and data utility can all be managed without having to take an all-or-nothing approach. Absolutist approaches of "we can't tolerate any noise in the data" or "we can't hold onto anything that could ever be used to de-anonymize" both lead to not doing anything (noise always exists, and any data can potentially be used to de-anonymize.)
- 
 
 ## De-anonymization resistance
 
@@ -140,3 +139,11 @@ So at this time, it appears that the most appropriate tool for us is OpenDP's.
 [open-dp-home]: https://opendp.org "OpenDP.org"
 
 [open-dp-lib]: https://github.com/opendp/opendp "GitHub: OpenDP Library"
+
+## Leaving doors open for a better future
+
+Given the current state of tools and the uncertainties around the noise addition at the analysis stage.
+However, a decision to do so should not be used to establish precedent.
+As tools improve and as we develop a better understanding of the data we collect, we should look for opportunities to introduce noise earlier.
+In particular, we should not build our systems and policies in such a way that would
+impose barriers to earlier noise addition.
