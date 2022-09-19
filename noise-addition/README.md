@@ -155,7 +155,7 @@ So at this time, it appears that the most appropriate tool for us is OpenDP's.
 
 ## Leaving doors open for a better future
 
-Given the current state of tools and the uncertainties around the noise addition at the analysis stage.
+Given the current state of tools and the uncertainties around the data we will have and the analyses required, the noise addition will need to be late.
 However, a decision to do so should not be used to establish precedent.
 As tools improve and as we develop a better understanding of the data we collect, we should look for opportunities to introduce noise earlier.
 In particular, we should not build our systems and policies in such a way that would
