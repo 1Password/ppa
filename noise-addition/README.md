@@ -115,6 +115,19 @@ The biggest advantage to adding noise at usage time is that we can tune the amou
 
 The tools available to us to add noise are most mature at this stage. This may change over time, but this practicality cannot be ignored.
 
+### An example
+
+This example is taken from the `python/examples` folder of [OpenDP repository][open-dp-lib].
+
+Here we see histograms of years of education with true data values and under differential privacy. In this analysis, they used a small privacy budget of ε = 1. (The smaller the ε, the stronger the privacy guarantees.)
+
+![Years education example](ed-years-example.png)
+
+In this case, adding noise to give strong privacy guarantees has little
+effect on the usefulness of the data reported.
+
+The relationship between effects on accuracy as a function of privacy budget is well-defined, but in actual calculations, it must be done in terms of the particular analysis.
+
 ## Noise at multiple stages
 
 It is possible, even expected, that noise be added at multiple stages. If the noise addition at each stage is done within a differential privacy framework, then we know how all of the noise additions add up, both in terms of how much it widens the resulting confidence interval and how DAR the final report is.
