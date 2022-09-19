@@ -32,8 +32,9 @@ It has been growing in use, both for data that organizations make public; but it
 The techniques break away from an all-or-nothing approach to data collection, storage, and analysis. Instead of making a binary PII/not-PII decision, we recognize that everything is potentially identifying and so the idea is to balance privacy guarantees against utility of the data in a more fluid way.
 
 We will find in what follows that technical difficulty of implementation, privacy protections, and data utility can all be managed without having to take an all-or-nothing approach. Absolutist approaches of "we can't tolerate any noise in the data" or "we can't hold onto anything that could ever be used to de-anonymize" both lead to not doing anything (noise always exists, and any data can potentially be used to de-anonymize.)
+ 
 
-## De-anonymization resistence
+## De-anonymization resistance
 
 For at least this document, I will talk about de-anonymization resistance and de-anonymization resistant. I will use DAR for both, as it should be clear which is meant in each usage.
 
@@ -58,14 +59,39 @@ There are (roughly) three stages at which noise can be added.
 
 All data analysis involves some inferencing that results in
 confidence intervals or error ranges or similar probabilistic interpretation the statistic in question.
-I will refer to all such things as "confidence intervals" in what follows, even though for some analyses it may manifest in other forms.
+I will refer to all such things as "confidence intervals" in what follows,
+even though for many analyses it may manifest in other forms.
 
-All data analysis, whether we deliberately add noise or not, has these confidence intervals. We always must tolerate some uncertainty in any data analysis. In some naive presentations of data analysis the uncertainty is not explicitly expressed, but that is an omission from analysis.
-There is always uncertainty. Deliberately adding noise makes the need for expressing confidence intervals more explicit, while in fact the confidence intervals should always be computed and should always be reported if not negligible.
+All data analysis, whether we deliberately add noise or not, has these confidence intervals.
+We always must tolerate some uncertainty in any data analysis.
+In some presentations of data analysis the uncertainty is not explicitly expressed,
+but that is an omission from analysis or the presentation of the analysis.
+There is always uncertainty.
+Deliberately adding noise makes the need for expressing confidence intervals more explicit, while in fact the confidence intervals should
+always be computed and should be reported if not negligible.
 
 If you can't tolerate any noise then you can't do any data analyses in the first place.
 
-## At data collection
+## Where do we add noise
+
+Noise added earlier has the advantage that everything downstream of that point has the privacy protections that the noise addition offers.
+It gives us more freedom to use the downstream information, with fewer controls on the downstream data.
+
+There are, however, increased challenges that come with earlier addition of noise.
+In the ideal case of adding noise, the nature and amount of the noise is tuned precisely to the particular analysis. The precise tunings means that for a particular analysis we can add the maximum amount of noise that still enables useful conclusions from the analysis as long as that maximum meets the minimum amount of noise to meet our minimal acceptable privacy guarantees.
+
+If we knew upfront exactly what analyses we were going to run, then we could get well-tuned noise addition early.
+But without knowing precisely what analyses are to be run, early noise addition cannot be so finely tuned.
+The fact of the matter is in most cases, we will not know what analyses we want to run ahead of time, and so early noise addition will have to be limited.
+
+There are also technical difficulties in noise addition for a single user.
+Often times, the aggregate properties across records are needed to determine optimal amounts of noise. There are mathematical and engineering techniques to solve those using homomorphic encryption, but _at present_ those are outside of our reach.
+
+So we have a set of trade-offs. The earlier noise is added, the better the privacy protection, but the later noise is added the more easily it can be tuned to specific needs.
+
+The good news is that noise addition can be done at multiple layers. Adding relatively small amounts early can be combined with adding more finely tuned amounts later.
+
+### At data collection
 
 Noise can be added client-side. This offers the strongest guarantees for the user,
 as it can add the highest degree of transparency to the user
@@ -77,13 +103,14 @@ But even with such a scheme, this still remains the most difficult.
 
 [^181]: The document with that sketch needs to be cleaned up before being shared more publicly.
 
-## At data storage
+### At data storage
 
 While we might receive data from clients that is not DAR, we can add the noise as we store the data. In this way, we would not be holding on to non-DAR data.
 
 This would protect users from the consequences of data breach or misuse of the stored data.
 Furthermore, it allows us to take a more holistic approach to the noise addition, as we can adjust the noise addition in light of the totality of the data.
-## At usage time
+
+### At usage time
 
 The biggest advantage to adding noise at usage time is that we can tune the amount of noise precisely to the query or analysis being sought. Noise added prior to this point cannot be tuned to specific analyses and so it would be much harder to judge how much noise is both necessary to reach a desired level of DAR and how that noise will affect the confidence in the inferencing from the data analysis.
 
@@ -94,3 +121,22 @@ The tools available to us to add noise are most mature at this stage. This may c
 It is possible, even expected, that noise be added at multiple stages. If the noise addition at each stage is done within a differential privacy framework, then we know how all of the noise additions add up, both in terms of how much it widens the resulting confidence interval and how DAR the final report is.
 
 A system that is designed to allow for all three mechanisms will give us the most flexible toolset for judging any individual case. In cases where the data sensitivity is high and the noise tolerance in analysis is also high, we could add most of the noise client side.
+
+## Tools
+
+The most well-developed and easiest to use tools are for noise addition at data analysis time.
+The two open source tools sets that I have spent the most time with are [Google's Differential privacy library][google-dp-lib] and [OpenDP][open-dp-home]'s [library][open-dp-lib].
+
+The underlying libraries are in C++ for Google's and Rust for OpenDP.
+Python bindings are available through third party open source projects for Google's,
+while the OpenDP project maintains a Python package that works in conjunction with the Rust code.
+I was unable to get Google's tools to compile or install on Apple Silicone[^20227], which has meant that I have not been able to actually run any sample analyses using it.
+So at this time, it appears that the most appropriate tool for us is OpenDP's.
+
+[^20227]: My most recent attempt at compiling or installing Google's differential privacy tools was July, 2022. The situation may have improved since then.
+
+[google-dp-lib]: https://github.com/google/differential-privacy "GitHub: Google Differential Privacy Library"
+
+[open-dp-home]: https://opendp.org "OpenDP.org"
+
+[open-dp-lib]: https://github.com/opendp/opendp "GitHub: OpenDP Library"
