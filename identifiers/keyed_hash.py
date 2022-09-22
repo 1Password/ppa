@@ -11,22 +11,23 @@ import base64
 # The keys should be fetched from a secure storage mechanism, such as
 # 1Password's Secrets Automation.
 
+
 class Anonymizer:
-    def __init__(self, hash_key):
+    def __init__(self, hash_key: bytes) -> None:
         """Initialize a new Anonymizer with a key."""
 
         # This is to compute keying and hasher creation just once
         self.instance_hmac: HMAC = hmac.new(hash_key, digestmod='sha256')
 
     def from_str(self, src: str) -> str:
-        """returns an anonymized form of the imput src."""
+        """returns an anonymized form of the input src."""
 
         # We do NOT want to update the initialized hasher
         # each time this is called, so we make copy.
         try:
-             local_hmac: HMAC = self.instance_hmac.copy()
+            local_hmac: HMAC = self.instance_hmac.copy()
         except AttributeError:
-            raise Exception("Anonymizer must be initialied before using")
+            raise Exception("Anonymizer must be initialized before using")
 
         local_hmac.update(src.encode('utf-8'))
         anon_bytes: bytes = local_hmac.digest()
@@ -34,7 +35,7 @@ class Anonymizer:
         anon_str: str = encode_to_string(anon_truncated_bytes)
 
         return(anon_str)
-    
+
 
 # This demo deals a list of source data, and a list output.
 # In real usage Iterators may make more sense, but this demo.
@@ -53,6 +54,7 @@ def anonymize_field(b5_field_name: str) -> list[str]:
         anonymized_ids.append(anon_id)
 
     return anonymized_ids
+
 
 def get_b5_field(field_name: str) -> list[str]:
     """This would be able to read from the relevant B5 tables."""
@@ -79,6 +81,8 @@ def get_b5_field(field_name: str) -> list[str]:
 # but if we do use a password for this master secret,
 # it should be generated as a gibberish/random password of at
 # least 23 characters in length.
+
+
 def get_hash_key_from_vault(field: str) -> bytes:
     """Retrieves the secret hash key for field from a well protected place.
 
@@ -98,7 +102,8 @@ def get_hash_key_from_vault(field: str) -> bytes:
     # The secret needs to be better protected and managed.
     return b'XCGkaWfQQ9TQyfDLVKebYdH'
 
-def truncate(data: bytes, byte_length=15) -> bytes:
+
+def truncate(data: bytes, byte_length: int = 15) -> bytes:
     """returns truncated data to min(byte_length, digest_size."""
 
     # 15 is a good default. It is collision safe for any plausible
@@ -117,9 +122,10 @@ def encode_to_string(data: bytes) -> str:
     return base64.b64encode(data).decode(encoding="ascii")
 
 
-def main():
+def main() -> None:
     for anon in anonymize_field("email"):
         print(anon)
+
 
 if __name__ == "__main__":
     main()
