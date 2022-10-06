@@ -2,6 +2,8 @@
 import hmac
 from hmac import HMAC
 import base64
+import secrets
+from typing import Iterable, Optional
 
 # This sample/demo code for anonymizing identifiers is excessively factored
 # and very verbose, particular when it comes to communicated expected types.
@@ -11,10 +13,38 @@ import base64
 # The keys should be fetched from a secure storage mechanism, such as
 # 1Password's Secrets Automation.
 
+def print_demo() -> None:
+    """Illustrates some usages."""
+    
+    print('Demo 1: anonymize_field("email") iteration')
+    for anon in anonymize_field("email", use_demo=True):
+        print(anon)
+
+    print('\nDemo 2: Use Anonymizer')
+    email_anonymizer = Anonymizer(get_hash_key_from_vault("email", use_demo=True))
+    for addr in get_b5_field("email", use_demo=True):
+        print(email_anonymizer.from_str(addr))
+
+    print('\nDemo 3: w/ throwaway key via anonymize field')
+    for anon in anonymize_field("email", throwaway=True, use_demo=True):
+        print(anon)
+
+    print('\nDemo 4: Use Anonymizer with throw away field')
+    email_anonymizer = Anonymizer()
+    for addr in get_b5_field("email", use_demo=True):
+        print(email_anonymizer.from_str(addr))
 
 class Anonymizer:
-    def __init__(self, hash_key: bytes) -> None:
-        """Initialize a new Anonymizer with a key."""
+    def __init__(self, hash_key: bytes | None = None) -> None:
+        """Initialize a new Anonymizer with a key or generate key if None."""
+
+        if hash_key == None:
+            hash_key = secrets.token_bytes()
+        
+        if not isinstance(hash_key, bytes):
+            raise ValueError("hash key isn't bytes")
+        if len(hash_key) < 16:
+            raise ValueError("hash key is too short")
 
         # This is to compute keying and hasher creation just once
         self.instance_hmac: HMAC = hmac.new(hash_key, digestmod='sha256')
@@ -36,44 +66,59 @@ class Anonymizer:
 
         return(anon_str)
 
+class _DemoData:
+    known_fields = ['email']
+    keys_from_vault: dict[str, bytes] = {"email": b'XCGkaWfQQ9TQyfDLVKebYdH'}
+    data_from_field: dict[str, list[str]] = { "email": [
+        'amelia@erhardt.fm',
+        'James.Hoffa@floor.lakemi.us',
+        'db_cooper@rocky_mtn.high.co.us',
+    ]}
 
 # This demo deals a list of source data, and a list output.
 # In real usage Iterators may make more sense, but this demo.
-def anonymize_field(b5_field_name: str) -> list[str]:
-    """Returns a list of anonymized IDs for the B5 field."""
+def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool = False) -> Iterable[str]:
+    """Returns a list of anonymized IDs for the B5 field.
+    
+    Parameters
+    ----------
+    b5_field_name: The name of the identifer field in the source DB
+    
+    throwaway: If we don't need the same key for previous or subsequenct runs, and never need to reverse
+    """
 
     # get (or create) the secret hashing key
-    hash_key: bytes = get_hash_key_from_vault(field=b5_field_name)
+    hash_key: Optional[bytes] = None
+    if not throwaway:
+        hash_key = get_hash_key_from_vault(b5_field_name, use_demo)
 
     # Create and initialize our keyed anonyimzer
     anonymizer = Anonymizer(hash_key)
 
     anonymized_ids: list[str] = []
-    for src in get_b5_field("email"):
+    for src in get_b5_field("email", use_demo=use_demo):
         anon_id = anonymizer.from_str(src)
         anonymized_ids.append(anon_id)
 
     return anonymized_ids
 
+def _true_get_field(field_name: str) -> Iterable[str]:
+    raise NotImplementedError
 
-def get_b5_field(field_name: str) -> list[str]:
+def get_b5_field(field_name: str, use_demo: bool = False) -> Iterable[str]:
     """This would be able to read from the relevant B5 tables."""
 
-    # This sample code returns a list, but a more generic iterator may make
-    # sense when actually reading from a database.
+    if not use_demo:
+        return _true_get_field(field_name)
 
-    # In this example code, the only field we know about is email
-    if field_name not in ["email"]:
+    # We will use our sample data in _DemoData
+
+    if field_name not in _DemoData.known_fields:
         # Given the potential for malicious input, we should not write out
         # a potentially malicious field name.
         raise ValueError("We can't fetch the field requested")
 
-    # our sample data is just a single short list
-    return [
-        'amelia@erhardt.fm',
-        'James.Hoffa@floor.lakemi.us',
-        'db_cooper@rocky_mtn.high.co.us',
-    ]
+    return _DemoData.data_from_field[field_name]
 
 # The hash_key is a high entropy secret that we will
 # pull from something like Secrets Automation.
@@ -82,25 +127,26 @@ def get_b5_field(field_name: str) -> list[str]:
 # it should be generated as a gibberish/random password of at
 # least 23 characters in length.
 
+def _true_get_hash_key(field: str) -> bytes:
+    raise NotImplementedError()
 
-def get_hash_key_from_vault(field: str) -> bytes:
+
+def get_hash_key_from_vault(field: str, use_demo: bool = False) -> bytes:
     """Retrieves the secret hash key for field from a well protected place.
-
-    This could just randomly generate a string with at least 128 bits of
-    entropy if we do not need results to be repeatable on separate runs.
     """
 
+    if not use_demo:
+        return _true_get_hash_key(field)
+    
+    # Everything else here is using demo data
     # this is just a demo, and the only field we know about is "email"
-    if field not in ["email"]:
+    if field not in _DemoData.known_fields:
         # This is security sensitive code. The input field string
         # may be malicious. Best not to log or display it without performing
         # additional checks.
         raise ValueError("unknown field")
 
-    # for this demo code, we just return something hard coded.
-    # Do NOT use a hard coded key in action.
-    # The secret needs to be better protected and managed.
-    return b'XCGkaWfQQ9TQyfDLVKebYdH'
+    return _DemoData.keys_from_vault[field]
 
 
 def truncate(data: bytes, byte_length: int = 15) -> bytes:
@@ -116,16 +162,9 @@ def truncate(data: bytes, byte_length: int = 15) -> bytes:
         raise ValueError("byte_length must be at least 12")
     return data[:length]
 
-
 def encode_to_string(data: bytes) -> str:
     """Encodes bytes to a string that is compact and indexable in DB."""
     return base64.b64encode(data).decode(encoding="ascii")
 
-
-def main() -> None:
-    for anon in anonymize_field("email"):
-        print(anon)
-
-
 if __name__ == "__main__":
-    main()
+    print_demo()
