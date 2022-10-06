@@ -21,7 +21,10 @@ def print_demo() -> None:
         print(anon)
 
     print('\nDemo 2: Use Anonymizer')
-    email_anonymizer = Anonymizer(get_hash_key_from_vault("email", use_demo=True))
+    # You really shouldn't be holding on this secret this scope,
+    # so it is better to use the mechanism from Demo 1.
+    hash_key = get_hash_key_from_vault("email", use_demo=True)
+    email_anonymizer = Anonymizer(hash_key)
     for addr in get_b5_field("email", use_demo=True):
         print(email_anonymizer.from_str(addr))
 
@@ -86,6 +89,9 @@ def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool 
     
     throwaway: If we don't need the same key for previous or subsequenct runs, and never need to reverse
     """
+
+    if not isinstance(b5_field_name, str):
+        raise TypeError("field name should be a string")
 
     # get (or create) the secret hashing key
     hash_key: Optional[bytes] = None
