@@ -99,7 +99,7 @@ for src in b5_table {
 
 - SHA256 for HMAC's hash.
 
-    It doesn't really matter what we use here, but using SHA256 means that we don't need to explain or defend why it doesn't matter. Be aware that many Python libraries default to MD5, and so the code must explicitely state the has to use.
+    It doesn't really matter what we use here, but using SHA256 means that we don't need to explain or defend why it doesn't matter. Be aware that many Python libraries default to MD5, and so the code must explicitely state the hash to use.
 
 - Truncation is of the number of bytes before being converted to a string. Using 15 bytes may make other things easier.
 
@@ -107,7 +107,7 @@ for src in b5_table {
 
     Do not truncate the string representation. Truncation is of the bytes returned by HMAC
 
-    The length to truncate to must be at least [^12] 12 bytes and must be not be longer than the number of bytes that the HMAC returns. When using SHA256, HMAC returns 32 bytes.
+    The length to truncate to must be at least[^12] 12 bytes and must be not be longer than the number of bytes that the HMAC returns. When using SHA256, HMAC returns 32 bytes.
 
     The truncation length can be tuned for the kind of string encoding to come later. If base64 is to be used, it is useful to start with a multiple of 3 bytes. If base32 is to be used, it is useful to start with a multiple of 5 bytes. If hex is used, then it doesn't matter.
 
@@ -136,7 +136,6 @@ we need the newly anonymized identifiers to remain consistent with previously an
 The second reason is that the users of data lake may reject the design if we do not provide some mechanism reverse identifier anonymization in case of some unanticipated need.
 And so while throwing away the key provides the strongest guarantees,
 I will sketch a hash key management proposal.
-
 
 ### A key per identifier field
 
@@ -168,10 +167,23 @@ If it turns out that some set of keys or analyses are frequently approved, then 
 
 ## Notes on the sample code
 
-Duck typing following the philosophy of "it is better to ask forgiveness than permission")
-may (or may not) be a good thing in general,
-but the known risks that come with it are not something
-we should accept in security sensitive code.
-The code is thus more verbose than we'd ideally like because it includes comprehensive
-type hinting for static analysis
-as well as runtime checks on data types so that any TypeErrors are reported early.
+Python's coding philosophy of "it is better to ask forgiveness than permission" may be a fine thing for a scripting language,
+but the [duck typing][duckTyping] that follows from it can introduces [certain dangers][dangerDuck] which should not be tolerated in security sensitive code.
+
+I have thus a lot of type hinting,
+which should make it easier to detect errors when coding through static analysis.
+A fairly strict [mypy][mypy] configuration file is include to assist with such static analysis.
+I've also included a few run time checks of types so that TypeErrors will show up early
+with predictable failures instead of unpredictable behavior.
+
+
+This makes the code more verbose than it otherwise would be.
+I've also tried to write it in ways that spell out the algorithm clearly,
+with lots of short simple functions instead of inlining their contents.
+I am also in the process of learning Python, and that probably shows.
+
+[duckTyping]: https://towardsdatascience.com/duck-typing-python-7aeac97e11f8 "Toward Data Science: Duck typing"
+
+[dangerDuck]: https://www.codeproject.com/Tips/1095195/The-Dangers-of-Duck-Typed-Languages "Code project: Duck-typing dangers"
+
+[mypy]: https://mypy.readthedocs.io/en/stable/ 
