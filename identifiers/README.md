@@ -137,6 +137,14 @@ The second reason is that the users of data lake may reject the design if we do 
 And so while throwing away the key provides the strongest guarantees,
 I will sketch a hash key management proposal.
 
+In these cases, in which a longer term key is stored, the `anonymize_field()` function
+in the sample code illustrates the usage.
+It is responsible for fetching the key for the given field from security storage,
+creating the anonymizer,
+and using that anonymizer.
+Offering this high level function means that the calling code never has to deal with
+the secret hash key.
+
 ### A key per identifier field
 
 There should be a separate key for each identifier.

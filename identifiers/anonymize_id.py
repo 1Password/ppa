@@ -1,9 +1,11 @@
-# Requires Python 3.7 or later.
-import hmac
+import sys
+if sys.version_info < (3, 6):
+    raise RuntimeError("Requires Python 3.6 or later")
+import hmac # requires 3.4
 from hmac import HMAC
 import base64
-import secrets
-from typing import Iterable, Optional
+import secrets # requires 3.6
+from typing import Iterable, Optional # requires 3.5
 
 # This sample/demo code for anonymizing identifiers is excessively factored
 # and very verbose, particular when it comes to communicated expected types.
@@ -81,7 +83,7 @@ class _DemoData:
 # This demo deals a list of source data, and a list output.
 # In real usage Iterators may make more sense, but this demo.
 def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool = False) -> Iterable[str]:
-    """Returns a list of anonymized IDs for the B5 field.
+    """Returns a list of anonymized IDs for field using a key that it fetches.
     
     Parameters
     ----------
