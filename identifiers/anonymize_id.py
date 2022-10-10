@@ -1,12 +1,13 @@
 from __future__ import annotations 
 import sys
-if sys.version_info < (3, 6):
-    raise RuntimeError("Requires Python 3.6 or later")
+if sys.version_info < (3, 10):
+    raise RuntimeError("Requires Python 3.10 or later")
 import hmac # requires 3.4
 from hmac import HMAC
 import base64
 import secrets # requires 3.6
-from typing import Iterable, Optional # requires 3.5
+from typing import Iterable, NewType, Optional, Callable # requires 3.5
+from typing import TypeAlias # requires 3.10
 
 # This sample/demo code for anonymizing identifiers is excessively factored
 # and very verbose, particular when it comes to communicated expected types.
@@ -21,7 +22,7 @@ def print_demo() -> None:
     
     # Set up to use demo data
     Anonymizer.demo_mode()
-    
+
     print('Demo 1: anonymize_field("email") iteration')
     for anon in anonymize_field("email"):
         print(anon)
@@ -29,7 +30,7 @@ def print_demo() -> None:
     print('\nDemo 2: Use Anonymizer')
     
     email_anonymizer = Anonymizer.new_from_field("email")
-    for addr in get_b5_field("email"):
+    for addr in Anonymizer.get_field_data("email"):
         print(email_anonymizer.anonymize(addr))
 
     print('\nDemo 3: w/ throwaway key via anonymize field')
@@ -41,13 +42,16 @@ def print_demo() -> None:
     for addr in get_b5_field("email"):
         print(email_anonymizer.anonymize(addr))
 
+GetKeyFunc: TypeAlias = Callable[[str], bytes]
+GetDataFunc: TypeAlias = Callable[[str], Iterable[str]]
+
 class Anonymizer:
     _use_demo_data: bool = False
     @classmethod
     def demo_mode(cls, enable: bool = True) -> None:
         cls._use_demo_data = enable
 
-    def __init__(self, hash_key: bytes | None = None) -> None:
+    def __init__(self, hash_key: Optional[bytes] = None) -> None:
         """Initialize a new Anonymizer with a key or generate key if None."""
 
         if hash_key == None:
@@ -60,14 +64,6 @@ class Anonymizer:
 
         # This is to compute keying and hasher creation just once
         self.instance_hmac: HMAC = hmac.new(hash_key, digestmod='sha256')
-
-    @classmethod
-    def new_from_field(cls, field_name: str) -> Anonymizer:
-        if not isinstance(field_name, str):
-            raise TypeError("field_name should be a string")
-            
-        hash_key = get_hash_key_from_vault(field_name)
-        return cls(hash_key)
 
     def anonymize(self, src: str) -> str:
         """returns an anonymized form of the input src."""
@@ -86,6 +82,28 @@ class Anonymizer:
 
         return(anon_str)
 
+    @classmethod
+    def new_from_field(cls, field_name: str) -> Anonymizer:
+        if not isinstance(field_name, str):
+            raise TypeError("field_name should be a string")
+            
+        hash_key = Anonymizer.get_hash_key(field_name)
+        return cls(hash_key)
+   
+    @staticmethod
+    def get_field_data(field_name: str, func: Optional[GetDataFunc] = None )-> Iterable[str]:
+        """Returns iterable of source field_name data using func or default."""
+        if not func:
+            func = get_b5_field
+        return func(field_name)
+
+    @staticmethod
+    def get_hash_key(field_name: str, func: Optional[GetKeyFunc] = None) -> bytes:
+        """Returns hash_key for field_name using default function or func."""
+        if not func:
+            func = get_hash_key_from_vault
+        return func(field_name)
+
 class _DemoData:
     known_fields = ['email']
     keys_from_vault: dict[str, bytes] = {"email": b'XCGkaWfQQ9TQyfDLVKebYdH'}
@@ -97,29 +115,37 @@ class _DemoData:
 
 # This demo deals a list of source data, and a list output.
 # In real usage Iterators may make more sense, but this demo.
-def anonymize_field(b5_field_name: str, throwaway: bool = False) -> Iterable[str]:
-    """Returns a list of anonymized IDs for field using a key that it fetches.
+def anonymize_field(field_name: str, throwaway: bool = False) -> Iterable[str]:
+    """Returns a list of anonymized IDs.
+
+    This is a high level wrapper which handles
+
+    - getting the source data to be anonymized
+    - getting the key needed to anonymize the data
+    - anonymizing the data
+
+    It returns an Iterable, such as a list, of the anonymized data
     
     Parameters
     ----------
-    b5_field_name: The name of the identifer field in the source DB
+    field_name: The name of the identifer field in the source DB
     
     throwaway: If we don't need the same key for previous or subsequenct runs, and never need to reverse
     """
 
-    if not isinstance(b5_field_name, str):
+    if not isinstance(field_name, str):
         raise TypeError("field name should be a string")
 
     # get (or create) the secret hashing key
     hash_key: Optional[bytes] = None
     if not throwaway:
-        hash_key = get_hash_key_from_vault(b5_field_name)
+        hash_key = Anonymizer.get_hash_key(field_name)
 
     # Create and initialize our keyed anonyimzer
     anonymizer = Anonymizer(hash_key)
 
     anonymized_ids: list[str] = []
-    for src in get_b5_field("email"):
+    for src in Anonymizer.get_field_data("email"):
         anon_id = anonymizer.anonymize(src)
         anonymized_ids.append(anon_id)
 
