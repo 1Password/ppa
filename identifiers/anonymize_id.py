@@ -1,13 +1,13 @@
 from __future__ import annotations 
 import sys
+from types import NoneType
 if sys.version_info < (3, 10):
     raise RuntimeError("Requires Python 3.10 or later")
 import hmac # requires 3.4
 from hmac import HMAC
 import base64
 import secrets # requires 3.6
-from typing import Iterable, NewType, Optional, Callable # requires 3.5
-from typing import TypeAlias # requires 3.10
+from typing import Iterable, Optional, Callable # requires 3.5
 
 # This sample/demo code for anonymizing identifiers is excessively factored
 # and very verbose, particular when it comes to communicated expected types.
@@ -41,9 +41,6 @@ def print_demo() -> None:
     email_anonymizer = Anonymizer()
     for addr in get_b5_field("email"):
         print(email_anonymizer.anonymize(addr))
-
-GetKeyFunc: TypeAlias = Callable[[str], bytes]
-GetDataFunc: TypeAlias = Callable[[str], Iterable[str]]
 
 class Anonymizer:
     _use_demo_data: bool = False
@@ -91,18 +88,26 @@ class Anonymizer:
         return cls(hash_key)
    
     @staticmethod
-    def get_field_data(field_name: str, func: Optional[GetDataFunc] = None )-> Iterable[str]:
+    def get_field_data(
+                field_name: str,
+                func: Optional[Callable[[str], Iterable[str]]] = None,
+                **kwargs
+             )-> Iterable[str]:
         """Returns iterable of source field_name data using func or default."""
         if not func:
             func = get_b5_field
-        return func(field_name)
+        return func(field_name, **kwargs)
 
     @staticmethod
-    def get_hash_key(field_name: str, func: Optional[GetKeyFunc] = None) -> bytes:
+    def get_hash_key(
+            field_name: str,
+            func: Optional[Callable[[str], bytes]] = None,
+            **kwargs
+        ) -> bytes:
         """Returns hash_key for field_name using default function or func."""
         if not func:
             func = get_hash_key_from_vault
-        return func(field_name)
+        return func(field_name, **kwargs)
 
 class _DemoData:
     known_fields = ['email']
