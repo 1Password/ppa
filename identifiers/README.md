@@ -125,8 +125,8 @@ Anonymizer
 
 ```python
 email_anonymizer = Anonymizer()
-    for addr in get_b5_field("email", use_demo=True):
-        print(email_anonymizer.from_str(addr))
+    for addr in get_b5_field("email"):
+        print(email_anonymizer.anonymize(addr))
 ```
 
 There are two reasons why we may wish to keep a tightly guarded copy of the hash keys.
@@ -154,7 +154,7 @@ In the demonstration code, there is a function, `anonymize_field(field_name: str
 
 ```python
 print('Demo 1: anonymize_field("email") iteration')
-    for anon in anonymize_field("email", use_demo=True):
+    for anon in anonymize_field("email"):
         print(anon)
 ```
 

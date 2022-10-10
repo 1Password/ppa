@@ -1,3 +1,4 @@
+from __future__ import annotations 
 import sys
 if sys.version_info < (3, 6):
     raise RuntimeError("Requires Python 3.6 or later")
@@ -18,28 +19,34 @@ from typing import Iterable, Optional # requires 3.5
 def print_demo() -> None:
     """Illustrates some usages."""
     
+    # Set up to use demo data
+    Anonymizer.demo_mode()
+    
     print('Demo 1: anonymize_field("email") iteration')
-    for anon in anonymize_field("email", use_demo=True):
+    for anon in anonymize_field("email"):
         print(anon)
 
     print('\nDemo 2: Use Anonymizer')
-    # You really shouldn't be holding on this secret this scope,
-    # so it is better to use the mechanism from Demo 1.
-    hash_key = get_hash_key_from_vault("email", use_demo=True)
-    email_anonymizer = Anonymizer(hash_key)
-    for addr in get_b5_field("email", use_demo=True):
-        print(email_anonymizer.from_str(addr))
+    
+    email_anonymizer = Anonymizer.new_from_field("email")
+    for addr in get_b5_field("email"):
+        print(email_anonymizer.anonymize(addr))
 
     print('\nDemo 3: w/ throwaway key via anonymize field')
-    for anon in anonymize_field("email", throwaway=True, use_demo=True):
+    for anon in anonymize_field("email", throwaway=True):
         print(anon)
 
     print('\nDemo 4: Use Anonymizer with throw away field')
     email_anonymizer = Anonymizer()
-    for addr in get_b5_field("email", use_demo=True):
-        print(email_anonymizer.from_str(addr))
+    for addr in get_b5_field("email"):
+        print(email_anonymizer.anonymize(addr))
 
 class Anonymizer:
+    _use_demo_data: bool = False
+    @classmethod
+    def demo_mode(cls, enable: bool = True) -> None:
+        cls._use_demo_data = enable
+
     def __init__(self, hash_key: bytes | None = None) -> None:
         """Initialize a new Anonymizer with a key or generate key if None."""
 
@@ -54,7 +61,15 @@ class Anonymizer:
         # This is to compute keying and hasher creation just once
         self.instance_hmac: HMAC = hmac.new(hash_key, digestmod='sha256')
 
-    def from_str(self, src: str) -> str:
+    @classmethod
+    def new_from_field(cls, field_name: str) -> Anonymizer:
+        if not isinstance(field_name, str):
+            raise TypeError("field_name should be a string")
+            
+        hash_key = get_hash_key_from_vault(field_name)
+        return cls(hash_key)
+
+    def anonymize(self, src: str) -> str:
         """returns an anonymized form of the input src."""
 
         # We do NOT want to update the initialized hasher
@@ -82,7 +97,7 @@ class _DemoData:
 
 # This demo deals a list of source data, and a list output.
 # In real usage Iterators may make more sense, but this demo.
-def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool = False) -> Iterable[str]:
+def anonymize_field(b5_field_name: str, throwaway: bool = False) -> Iterable[str]:
     """Returns a list of anonymized IDs for field using a key that it fetches.
     
     Parameters
@@ -98,14 +113,14 @@ def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool 
     # get (or create) the secret hashing key
     hash_key: Optional[bytes] = None
     if not throwaway:
-        hash_key = get_hash_key_from_vault(b5_field_name, use_demo)
+        hash_key = get_hash_key_from_vault(b5_field_name)
 
     # Create and initialize our keyed anonyimzer
     anonymizer = Anonymizer(hash_key)
 
     anonymized_ids: list[str] = []
-    for src in get_b5_field("email", use_demo=use_demo):
-        anon_id = anonymizer.from_str(src)
+    for src in get_b5_field("email"):
+        anon_id = anonymizer.anonymize(src)
         anonymized_ids.append(anon_id)
 
     return anonymized_ids
@@ -113,10 +128,10 @@ def anonymize_field(b5_field_name: str, throwaway: bool = False, use_demo: bool 
 def _true_get_field(field_name: str) -> Iterable[str]:
     raise NotImplementedError
 
-def get_b5_field(field_name: str, use_demo: bool = False) -> Iterable[str]:
+def get_b5_field(field_name: str) -> Iterable[str]:
     """This would be able to read from the relevant B5 tables."""
 
-    if not use_demo:
+    if not Anonymizer._use_demo_data:
         return _true_get_field(field_name)
 
     # We will use our sample data in _DemoData
@@ -139,11 +154,11 @@ def _true_get_hash_key(field: str) -> bytes:
     raise NotImplementedError()
 
 
-def get_hash_key_from_vault(field: str, use_demo: bool = False) -> bytes:
+def get_hash_key_from_vault(field: str) -> bytes:
     """Retrieves the secret hash key for field from a well protected place.
     """
 
-    if not use_demo:
+    if not Anonymizer._use_demo_data:
         return _true_get_hash_key(field)
     
     # Everything else here is using demo data
