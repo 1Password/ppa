@@ -88,6 +88,7 @@ class Anonymizer:
         return cls(hash_key)
    
     @staticmethod
+    # type: ignore[no-untyped-def]
     def get_field_data(
                 field_name: str,
                 func: Optional[Callable[[str], Iterable[str]]] = None,
@@ -99,10 +100,11 @@ class Anonymizer:
         return func(field_name, **kwargs)
 
     @staticmethod
+    # type: ignore[no-untyped-def]
     def get_hash_key(
             field_name: str,
             func: Optional[Callable[[str], bytes]] = None,
-            **kwargs
+            **kwargs,
         ) -> bytes:
         """Returns hash_key for field_name using default function or func."""
         if not func:
